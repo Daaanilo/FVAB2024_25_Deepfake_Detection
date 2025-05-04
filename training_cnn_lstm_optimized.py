@@ -5,7 +5,13 @@ import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, LSTM, Dense, TimeDistributed, Dropout, Input
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, mean_squared_error, roc_auc_score, confusion_matrix, log_loss
+from sklearn.metrics import (
+    accuracy_score, precision_score, recall_score, f1_score, 
+    mean_squared_error, roc_auc_score, confusion_matrix, log_loss, 
+    roc_curve, auc, precision_recall_curve
+)
+import matplotlib.pyplot as plt
+import seaborn as sns
 import json
 from datetime import datetime
 
@@ -169,17 +175,71 @@ metrics = {
     "mse": float(mean_squared_error(true_labels, pred_classes)),
     "roc_auc": float(roc_auc_score(true_labels, pred_probs)),
     "log_loss": float(log_loss(true_labels, pred_probs)),
-    "confusion_matrix": conf_matrix.tolist(),
-    "true_positive": int(conf_matrix[1][1]),
-    "true_negative": int(conf_matrix[0][0]),
-    "false_positive": int(conf_matrix[0][1]),
-    "false_negative": int(conf_matrix[1][0])
 }
 
-print("Metrics calculated:", metrics)
+# Calculate ROC curve and AUC
+fpr, tpr, thresholds = roc_curve(true_labels, pred_probs)
+roc_auc = auc(fpr, tpr)
 
-# Save metrics
-print("Saving metrics...")
-with open(os.path.join(LOG_DIR, "memory_optimized_metrics.json"), "w") as metrics_file:
-    json.dump(metrics, metrics_file, indent=4)
-print("Metrics saved.")
+# Plot and save ROC curve
+plt.figure(figsize=(10, 6))
+plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (AUC = {roc_auc:.2f})')
+plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--', label="Random Guess")
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate', fontsize=12)
+plt.ylabel('True Positive Rate', fontsize=12)
+plt.title('Receiver Operating Characteristic', fontsize=16)
+plt.legend(loc="lower right", fontsize=12)
+plt.grid(alpha=0.3)
+plt.savefig(os.path.join(LOG_DIR, "roc_curve_beautiful.png"))
+plt.close()
+
+# Calculate Precision-Recall curve
+precision, recall, pr_thresholds = precision_recall_curve(true_labels, pred_probs)
+
+# Plot and save Precision-Recall curve
+plt.figure(figsize=(10, 6))
+plt.plot(recall, precision, color='blue', lw=2, label='Precision-Recall curve')
+plt.xlabel('Recall', fontsize=12)
+plt.ylabel('Precision', fontsize=12)
+plt.title('Precision-Recall Curve', fontsize=16)
+plt.legend(loc="lower left", fontsize=12)
+plt.grid(alpha=0.3)
+plt.savefig(os.path.join(LOG_DIR, "precision_recall_curve_beautiful.png"))
+plt.close()
+
+# Plot and save confusion matrix
+plt.figure(figsize=(8, 6))
+sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', xticklabels=['Fake', 'Real'], yticklabels=['Fake', 'Real'])
+plt.title('Confusion Matrix', fontsize=16)
+plt.xlabel('Predicted Label', fontsize=14)
+plt.ylabel('True Label', fontsize=14)
+plt.savefig(os.path.join(LOG_DIR, "confusion_matrix_beautiful.png"))
+plt.close()
+
+# Plot training vs validation loss
+plt.figure(figsize=(10, 6))
+plt.plot(history.history['loss'], label='Training Loss', color='blue', lw=2)
+plt.plot(history.history['val_loss'], label='Validation Loss', color='orange', lw=2)
+plt.xlabel('Epochs', fontsize=12)
+plt.ylabel('Loss', fontsize=12)
+plt.title('Training vs Validation Loss', fontsize=16)
+plt.legend(fontsize=12)
+plt.grid(alpha=0.3)
+plt.savefig(os.path.join(LOG_DIR, "training_vs_validation_loss_beautiful.png"))
+plt.close()
+
+# Plot training vs validation accuracy
+plt.figure(figsize=(10, 6))
+plt.plot(history.history['accuracy'], label='Training Accuracy', color='blue', lw=2)
+plt.plot(history.history['val_accuracy'], label='Validation Accuracy', color='orange', lw=2)
+plt.xlabel('Epochs', fontsize=12)
+plt.ylabel('Accuracy', fontsize=12)
+plt.title('Training vs Validation Accuracy', fontsize=16)
+plt.legend(fontsize=12)
+plt.grid(alpha=0.3)
+plt.savefig(os.path.join(LOG_DIR, "training_vs_validation_accuracy_beautiful.png"))
+plt.close()
+
+print("All graphs have been saved beautifully.")
