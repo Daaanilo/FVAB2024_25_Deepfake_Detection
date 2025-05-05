@@ -12,8 +12,8 @@ from datetime import datetime
 
 # Percorsi dei nuovi dataset
 NEW_DATASETS = [
-    "/kaggle/input/xm2vts-lips-frames-of/xm2vts-lips-frames-of",
-    "/kaggle/input/m2fred-lips-frames-of/m2fred-lips-frames-of"
+    "/kaggle/input/xm2vts-lips-frames-of",
+    "/kaggle/input/m2fred-lips-frames-of"
 ]
 
 # Parametri
@@ -25,19 +25,22 @@ LOG_DIR = "/kaggle/working/logs_new_datasets/"
 if not os.path.exists(LOG_DIR):
     os.makedirs(LOG_DIR)
 
-# Funzione per caricare i percorsi delle sequenze per i nuovi dataset
+# Funzione per caricare i percorsi delle sequenze dai nuovi dataset (ricorsivamente)
 def load_real_file_paths(base_paths):
     print("Caricamento dei percorsi delle sequenze dai nuovi dataset...")
     file_paths = []
+    total_processed_folders = 0
     for base_path in base_paths:
-        for video_folder in os.listdir(base_path):
-            video_path = os.path.join(base_path, video_folder)
-            frames = sorted([os.path.join(video_path, f) for f in os.listdir(video_path) if f.endswith('.jpg')])
+        print(f"Analizzando dataset: {base_path}")
+        for root, dirs, files in os.walk(base_path):  # Ricorsione nelle sottocartelle
+            frames = sorted([os.path.join(root, f) for f in files if f.endswith('.jpg')])
             if len(frames) >= SEQUENCE_LENGTH:
                 file_paths.append(frames[:SEQUENCE_LENGTH])  # Prende solo SEQUENCE_LENGTH frame
-            else:
-                print(f"Salto video {video_folder}: Previsti almeno {SEQUENCE_LENGTH} frame, trovati {len(frames)} frame.")
-    print(f"Totale sequenze caricate: {len(file_paths)}")
+            total_processed_folders += 1
+            if total_processed_folders % 100 == 0:
+                print(f"  >> Caricate {total_processed_folders} cartelle finora...")
+    print(f"Totale cartelle elaborate: {total_processed_folders}")
+    print(f"Totale sequenze valide caricate: {len(file_paths)}")
     return file_paths
 
 file_paths = load_real_file_paths(NEW_DATASETS)
@@ -51,16 +54,21 @@ def preprocess_image(image_path):
     return image
 
 def preprocess_sequence(file_paths):
-    sequence = tf.map_fn(preprocess_image, file_paths, dtype=tf.float32)
+    # Applica preprocess_image a ciascun frame utilizzando una lista
+    sequence = [preprocess_image(image_path) for image_path in file_paths]
+    sequence = tf.stack(sequence)  # Impila i frame in un unico tensore
     return sequence
 
 def create_dataset(file_paths, batch_size):
-    dataset = tf.data.Dataset.from_tensor_slices(file_paths)
-    dataset = dataset.map(preprocess_sequence, num_parallel_calls=tf.data.AUTOTUNE)
+    # Aggiungi etichette (tutte 0 per "real")
+    labels = np.zeros(len(file_paths), dtype=np.int32)
+    dataset = tf.data.Dataset.from_tensor_slices((file_paths, labels))
+    dataset = dataset.map(
+        lambda x, y: (preprocess_sequence(x), y), num_parallel_calls=tf.data.AUTOTUNE
+    )
     dataset = dataset.batch(batch_size).prefetch(buffer_size=tf.data.AUTOTUNE)
     return dataset
 
-# Creazione del dataset per i nuovi dati
 BATCH_SIZE = 4
 real_dataset = create_dataset(file_paths, BATCH_SIZE)
 
@@ -73,7 +81,7 @@ print("Modello caricato.")
 # Funzione per ottenere le previsioni
 def get_predictions(dataset):
     predictions = []
-    for batch_x in dataset:
+    for batch_x, _ in dataset:
         batch_preds = model.predict(batch_x, verbose=0)
         predictions.extend(batch_preds.flatten())
     return np.array(predictions)
