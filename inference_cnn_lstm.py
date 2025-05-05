@@ -53,19 +53,20 @@ def preprocess_image(image_path):
     image = tf.cast(image, tf.float32) / 255.0
     return image
 
-def preprocess_sequence(file_paths):
-    # Applica preprocess_image a ciascun frame utilizzando una lista
-    sequence = [preprocess_image(image_path) for image_path in file_paths]
-    sequence = tf.stack(sequence)  # Impila i frame in un unico tensore
-    return sequence
+def preprocess_sequence(file_paths, label):
+    # Preelabora una sequenza di immagini usando TensorFlow
+    sequence = tf.map_fn(preprocess_image, file_paths, dtype=tf.float32)
+    return sequence, label
 
 def create_dataset(file_paths, batch_size):
-    # Aggiungi etichette (tutte 0 per "real")
-    labels = np.zeros(len(file_paths), dtype=np.int32)
-    dataset = tf.data.Dataset.from_tensor_slices((file_paths, labels))
-    dataset = dataset.map(
-        lambda x, y: (preprocess_sequence(x), y), num_parallel_calls=tf.data.AUTOTUNE
-    )
+    # Converti i percorsi delle immagini in tensori
+    file_paths_tensor = tf.ragged.constant(file_paths, dtype=tf.string)
+    labels = np.zeros(len(file_paths), dtype=np.int32)  # Tutte etichette 0 perché real
+    labels_tensor = tf.convert_to_tensor(labels, dtype=tf.int32)
+
+    # Crea il dataset
+    dataset = tf.data.Dataset.from_tensor_slices((file_paths_tensor, labels_tensor))
+    dataset = dataset.map(preprocess_sequence, num_parallel_calls=tf.data.AUTOTUNE)
     dataset = dataset.batch(batch_size).prefetch(buffer_size=tf.data.AUTOTUNE)
     return dataset
 
@@ -81,13 +82,16 @@ print("Modello caricato.")
 # Funzione per ottenere le previsioni
 def get_predictions(dataset):
     predictions = []
-    for batch_x, _ in dataset:
+    total_batches = len(dataset)
+    print(f"Calcolo delle previsioni... Totale batch: {total_batches}")
+    for i, (batch_x, _) in enumerate(dataset):
         batch_preds = model.predict(batch_x, verbose=0)
         predictions.extend(batch_preds.flatten())
+        if (i + 1) % 10 == 0 or (i + 1) == total_batches:
+            print(f"  >> Batch {i + 1}/{total_batches} completato.")
     return np.array(predictions)
 
 # Ottenere le previsioni
-print("Calcolo delle previsioni...")
 pred_probs = get_predictions(real_dataset)
 pred_classes = (pred_probs > 0.5).astype(int)
 
@@ -100,14 +104,26 @@ metrics = {
     "recall": float(recall_score(true_labels, pred_classes, zero_division=1)),
     "f1_score": float(f1_score(true_labels, pred_classes, zero_division=1)),
     "mse": float(mean_squared_error(true_labels, pred_classes)),
-    "roc_auc": float(roc_auc_score(true_labels, pred_probs)),
-    "log_loss": float(log_loss(true_labels, pred_probs)),
     "confusion_matrix": conf_matrix.tolist(),
     "true_positive": int(conf_matrix[1][1]),
     "true_negative": int(conf_matrix[0][0]),
     "false_positive": int(conf_matrix[0][1]),
     "false_negative": int(conf_matrix[1][0])
 }
+
+# Calcolo condizionato della metrica ROC AUC
+if len(np.unique(true_labels)) > 1:  # Verifica se ci sono almeno due classi
+    metrics["roc_auc"] = float(roc_auc_score(true_labels, pred_probs))
+else:
+    print("Avviso: ROC AUC non calcolabile con una sola classe nei dati reali.")
+    metrics["roc_auc"] = None  # Oppure imposta un valore predefinito
+
+# Calcolo condizionato della log loss
+if len(np.unique(true_labels)) > 1:  # Verifica se ci sono almeno due classi
+    metrics["log_loss"] = float(log_loss(true_labels, pred_probs))
+else:
+    print("Avviso: Log Loss non calcolabile con una sola classe nei dati reali.")
+    metrics["log_loss"] = None  # Oppure imposta un valore predefinito
 
 # Stampa delle metriche
 print("Metriche calcolate:", metrics)
