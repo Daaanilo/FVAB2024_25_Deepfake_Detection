@@ -71,6 +71,14 @@ train_files, val_files, train_labels, val_labels = train_test_split(
 )
 print(f"Train set: {len(train_files)} sequences, Validation set: {len(val_files)} sequences.")
 
+# Count the number of "real" and "fake" videos in the dataset
+# train_real_count = sum(1 for label in train_labels if label == 0)
+# train_fake_count = sum(1 for label in train_labels if label == 1)
+# val_real_count = sum(1 for label in val_labels if label == 0)
+# val_fake_count = sum(1 for label in val_labels if label == 1)
+# print(f"Train set: {len(train_files)} sequences (Real: {train_real_count}, Fake: {train_fake_count})")
+# print(f"Validation set: {len(val_files)} sequences (Real: {val_real_count}, Fake: {val_fake_count})")
+
 # Convert labels to numpy arrays
 train_labels = np.array(train_labels, dtype=np.int32)
 val_labels = np.array(val_labels, dtype=np.int32)
