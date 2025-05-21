@@ -164,7 +164,7 @@ print(f"Training completed in: {end_time - start_time}")
 
 # Save model
 print("Saving model...")
-model.save(os.path.join(MODEL_DIR, "optimized_cnn_lstm_model.h5"))
+model.save(os.path.join(MODEL_DIR, "optimized_cnn_lstm_model.keras"))
 print("Model saved.")
 
 # Evaluation
