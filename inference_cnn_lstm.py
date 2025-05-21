@@ -33,6 +33,8 @@ def load_file_paths(base_path, label, sequence_length=SEQUENCE_LENGTH):
             file_paths.append(frames[:sequence_length])
             labels.append(label)
         total_processed_folders += 1
+        if total_processed_folders % 100 == 0:
+            print(f"Caricate {total_processed_folders} cartelle finora...")
     print(f"Totale cartelle elaborate ({base_path}): {total_processed_folders}")
     print(f"Totale sequenze valide caricate ({base_path}): {len(file_paths)}")
     return file_paths, labels
@@ -103,7 +105,7 @@ BATCH_SIZE = 4
 dataset = create_dataset(all_file_paths, all_labels, BATCH_SIZE)
 
 # Caricamento del modello salvato
-MODEL_PATH = "/kaggle/working/model/optimized_cnn_lstm_model.h5"
+MODEL_PATH = "/kaggle/working/celebdf_model/model/best_model_fold1.keras"
 print("Caricamento del modello salvato...")
 model = tf.keras.models.load_model(MODEL_PATH)
 print("Modello caricato.")
