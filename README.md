@@ -60,18 +60,42 @@ The **FVAB** project focuses on detecting deepfake videos by analyzing facial dy
 
 ---
 
-## 🚀 Avvio del Progetto / How to Run
-
 Segui questi passaggi per eseguire il progetto in locale:
 
-### 📦 1. Installazione delle dipendenze / Install dependencies
+### ✅ Requisiti
 
-Assicurati di avere Python 3.8+ installato. Poi esegui:
+- Python 3.8 o superiore
+- pip installato
 
+### 📦 Installazione delle dipendenze
+
+Apri il terminale nella directory del progetto ed esegui:
+
+```bash
 pip install -r requirements.txt
+```
+
+### 🧪 Esecuzione dei moduli
+
+1. **Estrazione dei frame e optical flow:**
+
+```bash
 python 1_frame_extraction_optical_flow.py
+```
+
+2. **Addestramento del modello CNN-LSTM:**
+
+```bash
 python 2_training_cnn_lstm_optimized.py
+```
+
+3. **Inferenza con il modello addestrato:**
+
+```bash
 python 3_inference_cnn_lstm.py
+```
+
+---
 
 ## 🎓 Contesto / Context
 
