@@ -12,9 +12,9 @@ flow_threshold = 1.0  # Soglia per il flusso ottico
 def calculate_motion_intensity(prev_frame, next_frame):
     flow = cv2.calcOpticalFlowFarneback(prev_frame, next_frame, None, 0.5, 3, 15, 3, 5, 1.2, 0)
     magnitude, _ = cv2.cartToPolar(flow[..., 0], flow[..., 1])
-    return np.mean(magnitude)  # Media delle intensità del movimento
+    return np.mean(magnitude)
 
-# Funzione per estrarre i frame più significativi basati sul flusso ottico
+# Funzione per estrarre i frame significativi in ordine temporale
 def extract_significant_frames(video_path, output_folder, num_frames, flow_threshold):
     print(f"[INFO] Inizio estrazione frame da: {video_path}")
     os.makedirs(output_folder, exist_ok=True)
@@ -22,12 +22,11 @@ def extract_significant_frames(video_path, output_folder, num_frames, flow_thres
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
     if total_frames < 2:
-        print(f"[ERROR] Il video {video_path} non contiene frame sufficienti per calcolare il flusso ottico.")
+        print(f"[ERROR] Il video {video_path} non contiene frame sufficienti.")
         cap.release()
         return
 
     motion_scores = []
-    frames = []
 
     ret, prev_frame = cap.read()
     if not ret:
@@ -45,21 +44,31 @@ def extract_significant_frames(video_path, output_folder, num_frames, flow_thres
 
         next_frame_gray = cv2.cvtColor(next_frame, cv2.COLOR_BGR2GRAY)
         motion_intensity = calculate_motion_intensity(prev_frame_gray, next_frame_gray)
-        
-        # Salva il frame solo se supera la soglia del flusso ottico
+
+        # Conserva solo i frame con movimento significativo
         if motion_intensity > flow_threshold:
-            motion_scores.append((motion_intensity, i, next_frame.copy()))  # Salva intensità, indice e frame
-        
+            motion_scores.append((motion_intensity, i, next_frame.copy()))  # (intensità, indice, frame)
+
         prev_frame_gray = next_frame_gray
 
     cap.release()
 
-    # Ordina i frame per intensità di movimento decrescente
-    motion_scores.sort(reverse=True, key=lambda x: x[0])
-    selected_frames = motion_scores[:num_frames]
+    if not motion_scores:
+        print(f"[WARNING] Nessun frame significativo trovato in {video_path}.")
+        return
+
+    # Ordina per indice temporale
+    motion_scores.sort(key=lambda x: x[1])
+
+    # Seleziona frame equidistanti
+    if len(motion_scores) > num_frames:
+        indices = np.linspace(0, len(motion_scores) - 1, num=num_frames, dtype=int)
+        selected_frames = [motion_scores[i] for i in indices]
+    else:
+        selected_frames = motion_scores
 
     # Salva i frame selezionati
-    for rank, (motion, frame_index, frame) in enumerate(selected_frames, start=1):
+    for rank, (_, frame_index, frame) in enumerate(selected_frames, start=1):
         frame_filename = os.path.join(output_folder, f'frame_{rank:03d}.jpg')
         cv2.imwrite(frame_filename, frame)
         print(f"[INFO] Salvato frame {rank} (indice: {frame_index}) in: {frame_filename}")
@@ -67,7 +76,7 @@ def extract_significant_frames(video_path, output_folder, num_frames, flow_thres
     print(f"[INFO] Completata estrazione frame significativi per: {video_path}")
 
 # Percorsi delle cartelle principali
-main_folders = ['celeb_real', 'celeb_fake']  # Cartelle di input
+main_folders = ['celeb_real', 'celeb_fake']
 
 # Loop attraverso le cartelle principali
 for folder in main_folders:
@@ -76,9 +85,12 @@ for folder in main_folders:
     if not os.path.exists(folder_path):
         print(f"[WARNING] La cartella {folder_path} non esiste. Saltata.")
         continue
+
     for video_name in os.listdir(folder_path):
         video_path = os.path.join(folder_path, video_name)
-        output_subfolder = 'real' if folder == 'celeb_real' else 'fake'  # Suddivisione in real e fake
+        if not video_name.lower().endswith(('.mp4', '.avi', '.mov', '.mkv')):
+            continue  # ignora file non video
+        output_subfolder = 'real' if folder == 'celeb_real' else 'fake'
         output_folder = os.path.join(output_path, output_subfolder, os.path.splitext(video_name)[0])
         print(f"[INFO] Elaborazione video: {video_name}")
         extract_significant_frames(video_path, output_folder, num_frames, flow_threshold)
