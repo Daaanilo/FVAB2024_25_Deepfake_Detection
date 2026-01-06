@@ -9,15 +9,15 @@
 <h1 align="center">🎭 FVAB: Deepfake Video Detection</h1>
 
 <p align="center">
-  <strong>Rilevamento di Video Deepfake tramite Dinamiche Facciali</strong><br>
-  <em>Detecting Deepfake Videos through Facial Dynamics Analysis</em>
+  <strong>Detecting Deepfake Videos through Facial Dynamics Analysis</strong><br>
+  <em>Rilevamento di Video Deepfake tramite Dinamiche Facciali</em>
 </p>
 
 <p align="center">
-  <a href="#-descrizione-del-progetto-italiano">🇮🇹 Italiano</a> •
   <a href="#-project-description-english">🇬🇧 English</a> •
+  <a href="#-descrizione-del-progetto-italiano">🇮🇹 Italiano</a> •
   <a href="#-quick-start">🚀 Quick Start</a> •
-  <a href="#-architettura--architecture">🏗️ Architecture</a>
+  <a href="#-architecture--architettura">🏗️ Architecture</a>
 </p>
 
 ---
@@ -44,13 +44,13 @@
 
 ---
 
-## 📖 Descrizione del Progetto (Italiano)
+## 📖 Project Description (English)
 
-Il progetto **FVAB** si concentra sul rilevamento di video deepfake analizzando le **dinamiche facciali**, in particolare i movimenti temporali del volto, difficili da replicare nei contenuti sintetici.
+The **FVAB** project focuses on detecting deepfake videos by analyzing **facial dynamics**, specifically temporal facial movements that are difficult to replicate in synthetic content.
 
-### 🧠 Approccio Tecnico
+### 🧠 Technical Approach
 
-L'architettura combina due tecnologie di deep learning:
+The architecture combines two deep learning technologies:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -82,36 +82,13 @@ L'architettura combina due tecnologie di deep learning:
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-| Componente | Funzione |
-|------------|----------|
-| **🔍 CNN** | Estrazione caratteristiche spaziali da ogni frame |
-| **🔄 LSTM** | Apprendimento delle dinamiche temporali |
-| **📊 Classifier** | Classificazione binaria Real/Fake |
-
-### 🎯 Obiettivi
-
-- [x] Rilevare deepfake analizzando i movimenti facciali temporali
-- [x] Sviluppare un modello CNN-LSTM robusto
-- [x] Addestrare il modello con Celeb-DFv2
-- [x] Valutare le prestazioni usando accuratezza, F1-score, MSE
-
----
-
-## 📖 Project Description (English)
-
-The **FVAB** project focuses on detecting deepfake videos by analyzing **facial dynamics**, specifically temporal facial movements that are difficult to replicate in synthetic content.
-
-### 🧠 Technical Approach
-
-The architecture combines two deep learning technologies:
-
 | Component | Function |
 |-----------|----------|
 | **🔍 CNN** | Spatial feature extraction from each frame |
 | **🔄 LSTM** | Learning temporal dynamics |
 | **📊 Classifier** | Binary classification Real/Fake |
 
-### 🎯 Goals
+### 🎯 Project Goals
 
 - [x] Detect deepfakes by analyzing temporal facial movements
 - [x] Develop a robust CNN-LSTM model
@@ -120,30 +97,53 @@ The architecture combines two deep learning technologies:
 
 ---
 
-## 🛠️ Key Features / Caratteristiche Principali
+## 📖 Descrizione del Progetto (Italiano)
 
-| Feature | Descrizione 🇮🇹 | Description 🇬🇧 |
+Il progetto **FVAB** si concentra sul rilevamento di video deepfake analizzando le **dinamiche facciali**, in particolare i movimenti temporali del volto, difficili da replicare nei contenuti sintetici.
+
+### 🧠 Approccio Tecnico
+
+L'architettura combina due tecnologie di deep learning:
+
+| Componente | Funzione |
+|------------|----------|
+| **🔍 CNN** | Estrazione caratteristiche spaziali da ogni frame |
+| **🔄 LSTM** | Apprendimento delle dinamiche temporali |
+| **📊 Classifier** | Classificazione binaria Real/Fake |
+
+### 🎯 Obiettivi del Progetto
+
+- [x] Rilevare deepfake analizzando i movimenti facciali temporali
+- [x] Sviluppare un modello CNN-LSTM robusto
+- [x] Addestrare il modello con Celeb-DFv2
+- [x] Valutare le prestazioni usando accuratezza, F1-score, MSE
+
+---
+
+## ✨ Key Features / Caratteristiche Principali
+
+| Feature | Description 🇬🇧 | Descrizione 🇮🇹 |
 |---------|-----------------|-----------------|
-| 📊 **Data Preprocessing** | Estrazione dei punti chiave del volto e tratti facciali | Extracts facial landmarks and key facial points |
-| 🧠 **CNN-LSTM Model** | CNN per caratteristiche spaziali + LSTM per dinamiche temporali | CNN for spatial features + LSTM for temporal dynamics |
-| ⚙️ **Model Training** | Deep learning su video reali/sintetici | Deep learning on real/synthetic videos |
-| 📏 **Performance Metrics** | Accuratezza, F1-score, MSE | Accuracy, F1-score, MSE |
+| 📊 **Data Preprocessing** | Extracts facial landmarks and key facial points | Estrazione dei punti chiave del volto |
+| 🧠 **CNN-LSTM Model** | CNN for spatial features + LSTM for temporal dynamics | CNN per features spaziali + LSTM per dinamiche temporali |
+| ⚙️ **Model Training** | Deep learning on real/synthetic videos | Deep learning su video reali/sintetici |
+| 📏 **Performance Metrics** | Accuracy, F1-score, MSE | Accuratezza, F1-score, MSE |
 
 ---
 
 ## 🗂️ Datasets Used / Dataset Utilizzati
 
-| Dataset | Descrizione | Purpose |
-|---------|-------------|---------|
-| 📦 **Celeb-DFv2** | Dataset avanzato per deepfake detection con video ad alta qualità | Advanced high-quality deepfake detection |
-| 📦 **M2FRED / WAV2LIP** | Sincronizzazione audio-labbra e movimento labiale sintetico | Lip-sync and synthetic lip movement analysis |
-| 📦 **XM2VTS** | Dataset biometricamente bilanciato per dati facciali reali | Biometrically balanced real facial data |
+| Dataset | Description | Descrizione |
+|---------|-------------|-------------|
+| 📦 **Celeb-DFv2** | Advanced high-quality deepfake detection | Dataset avanzato per deepfake detection |
+| 📦 **M2FRED / WAV2LIP** | Lip-sync and synthetic lip movement analysis | Sincronizzazione audio-labbra |
+| 📦 **XM2VTS** | Biometrically balanced real facial data | Dataset biometricamente bilanciato |
 
 ---
 
 ## 🚀 Quick Start
 
-### ✅ Requisiti / Requirements
+### ✅ Requirements / Requisiti
 
 - Python 3.8+
 - pip installed
@@ -151,15 +151,15 @@ The architecture combines two deep learning technologies:
 ### 📦 Installation
 
 ```bash
-# Clone the repository / Clona la repository
+# Clone the repository
 git clone https://github.com/your-username/FVAB-deepfake-detection.git
 cd FVAB-deepfake-detection
 
-# Install dependencies / Installa le dipendenze
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### 🧪 Execution / Esecuzione
+### 🧪 Execution
 
 ```bash
 # 1️⃣ Frame extraction & optical flow
